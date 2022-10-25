@@ -1,54 +1,28 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, Button, View } from 'react-native';
-import { useEffect, useState } from 'react';
-import Voice from '@react-native-voice/voice';
+// In App.js in a new project
 
-export default function App() {
-  let [started, setStarted] = useState(false);
-  let [results, setResults] = useState([]);
+import * as React from 'react';
+import { View, Text } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-  useEffect(() => {
-    Voice.onSpeechError = onSpeechError;
-    Voice.onSpeechResults = onSpeechResults;
-
-    return () => {
-      Voice.destroy().then(Voice.removeAllListeners);
-    }
-  }, []);
-
-  const startSpeechToText = async () => {
-    await Voice.start("pt-BR");
-    setStarted(true);
-  };
-
-  const stopSpeechToText = async () => {
-    await Voice.stop();
-    setStarted(false);
-  };
-
-  const onSpeechResults = (result) => {
-    setResults(result.value);
-  };
-
-  const onSpeechError = (error) => {
-    console.log(error);
-  };
-
+function HomeScreen() {
   return (
-    <View style={styles.container}>
-      {!started ? <Button title='Start Speech to Text' onPress={startSpeechToText} /> : undefined}
-      {started ? <Button title='Stop Speech to Text' onPress={stopSpeechToText} /> : undefined}
-      {results.map((result, index) => <Text key={index}>{result}</Text>)}
-      <StatusBar style="auto" />
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Home Screen</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const Stack = createNativeStackNavigator();
+
+function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+export default App;
