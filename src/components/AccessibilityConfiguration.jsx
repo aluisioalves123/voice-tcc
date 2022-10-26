@@ -1,6 +1,7 @@
 import { SafeAreaView, Text, Button, View } from 'react-native';
-import { useEffect } from 'react'
 import * as Speech from 'expo-speech'
+import { useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import Voice from '@react-native-voice/voice';
 
 import useStore from '../store'
@@ -26,7 +27,6 @@ const AccessibilityConfiguration = ({ navigation }) => {
   const onSpeechError = (error) => {
     console.log(error);
     startSpeechToText()
-    Speech.speak('fala mais alto que eu sou míope')
   }
   
   const changeMicrophoneNavigation = useStore((state) => state.changeMicrophoneNavigation)
@@ -37,17 +37,18 @@ const AccessibilityConfiguration = ({ navigation }) => {
     Speech.speak(greeting, options)
   }
 
-
-  useEffect(() => {
-    speakGreeting()
-    Voice.onSpeechError = onSpeechError
-    Voice.onSpeechResults = onSpeechResults
-    startSpeechToText()
-
-    return () => {
-      Voice.destroy().then(Voice.removeAllListeners)
-    }
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      speakGreeting()
+      Voice.onSpeechError = onSpeechError
+      Voice.onSpeechResults = onSpeechResults
+      startSpeechToText()
+  
+      return () => {
+        Voice.destroy().then(Voice.removeAllListeners)
+      }
+    }, [])
+  )
 
   const settingAccessibility = (activated) => {
     changeMicrophoneNavigation(activated)

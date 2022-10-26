@@ -1,9 +1,41 @@
 import { SafeAreaView, Text, Button, View , TextInput} from 'react-native';
 import { useState } from 'react'
+import { useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+
+import * as Speech from 'expo-speech'
+import Voice from '@react-native-voice/voice';
 
 import useStore from '../store'
 
 const PlayerNameConfiguration = ({ navigation }) => {
+
+  const startSpeechToText = async () => {
+    await Voice.start("pt-BR");
+  }
+
+  const onSpeechResults = (result) => {
+    Speech.speak(`por acaso seu nome é  ${result.value[0]}?`)
+  }
+
+  const onSpeechError = (error) => {
+    console.log(error);
+    startSpeechToText()
+    Speech.speak('dormi no besouro, fala de novo aí')
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      Speech.speak('agora diga seu nome aí seu zé ruela')
+      Voice.onSpeechError = onSpeechError
+      Voice.onSpeechResults = onSpeechResults
+      startSpeechToText()
+
+      return () => {
+        Voice.destroy().then(Voice.removeAllListeners)
+      }
+    }, [])
+  )
 
   const microphoneNavigation = useStore((state) => state.microphoneNavigation)
   const changePlayerName = useStore((state) => state.changePlayerName)
