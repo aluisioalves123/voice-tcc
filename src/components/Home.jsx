@@ -4,8 +4,6 @@ import useStore from '../store'
 
 const Home = ({ navigation }) => {
 
-  const microphoneNavigation = useStore((state) => state.microphoneNavigation)
-
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
       <Text className='text-lg'>Quizz Show</Text>
