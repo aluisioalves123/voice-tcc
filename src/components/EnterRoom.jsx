@@ -22,10 +22,16 @@ const EnterRoom = ({ navigation }) => {
   const onSpeechResults = (result) => {
     setVoiceResult(result.value)
   }
+
+  const onSpeechError = () => {
+    Speech.speak('não entendi, repita', {onDone: async() => {
+      startListening()
+    }})
+  }
   
   useFocusEffect(
     useCallback(()=>{
-      Voice.onSpeechError = startListening;
+      Voice.onSpeechError = onSpeechError;
       Voice.onSpeechResults = onSpeechResults;
 
       Speech.speak('Diga o nome da sala por favor')
@@ -51,7 +57,7 @@ const EnterRoom = ({ navigation }) => {
               let room_exists = true
               if (room_exists) {
                 changeRoomName(tempRoomName)
-                navigation.navigate('Room')
+                navigation.navigate('Lobby')
               } else {
                 Speech.speak('Sala não encontrada, tente outra sala')
                 setTempRoomName(null)
@@ -63,7 +69,7 @@ const EnterRoom = ({ navigation }) => {
             // redirecionar para a tela de sala se achar
             // se nao, dizer que nao achou e pedir pro usuario tentar de novo
           } else if (voiceResult.includes('não')) {
-            Speech.speak('Diga seu nome novamente')
+            Speech.speak('Diga o nome da sala novamente')
             setVoiceInterfaceState('waiting_for_name')
             startListening()
           }

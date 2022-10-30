@@ -1,11 +1,14 @@
-import { SafeAreaView, Text, Button, View } from 'react-native';
-import { NavigationHelpersContext, useFocusEffect } from '@react-navigation/native';
+import { SafeAreaView, Text, Button, View , TextInput} from 'react-native';
 import * as Speech from 'expo-speech'
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react'
 
 import Voice from '@react-native-voice/voice'
 
-const Home = ({ navigation }) => {
+import useStore from '../store'
+
+const Lobby = ({ navigation }) => {
+  const roomName = useStore((state) => state.roomName)
 
   const startListening = async() => {
     Speech.speak(' ', {onDone: async() => {
@@ -14,12 +17,12 @@ const Home = ({ navigation }) => {
   }
 
   const onSpeechResults = (result) => {
-    if (result.value.includes('entrar')) {
-      navigation.navigate('EnterRoom')
-    } else if (result.value.includes('criar')) {
-      navigation.navigate('Room')
+    if (result.value.includes('iniciar')) {
+      navigation.navigate('Game')
+    } else if (result.value.includes('sair')) {
+      navigation.navigate('Home')
     } else {
-      Speech.speak('Não entendi, repita')
+      Speech.speak('Não entendi, pode repetir?')
       startListening()
     }
   }
@@ -35,7 +38,7 @@ const Home = ({ navigation }) => {
       Voice.onSpeechError = onSpeechError;
       Voice.onSpeechResults = onSpeechResults;
 
-      Speech.speak('Diga entrar para entrar, diga criar para criar')
+      Speech.speak('Sala encontrada, diga iniciar para começar ou sair para sair da sala')
       startListening()
 
       return () => {
@@ -46,12 +49,12 @@ const Home = ({ navigation }) => {
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
-      <Text className='text-lg'>Jogo do Milhão</Text>
-      <Button title='Entrar em uma sala'/>
-      <Button title='Criar uma sala'/>
-      <Button title='Tutorial'/>
+      <Text className='text-lg'>Sala {roomName}</Text>
+      <Text className='text-xl'>1/4 jogadores</Text>
+      <Button title='Iniciar partida'/>
+      <Button title='Sair da sala'/>
     </SafeAreaView>
   );
 }
 
-export default Home
+export default Lobby

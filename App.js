@@ -5,8 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AccessibilityConfiguration from './src/components/AccessibilityConfiguration'
 import PlayerNameConfiguration from './src/components/PlayerNameConfiguration';
 import Home from './src/components/Home';
-import Room from './src/components/Room';
+import Lobby from './src/components/Lobby';
 import EnterRoom from './src/components/EnterRoom';
+import Game from './src/components/Game';
 
 import { useEffect } from 'react';
 
@@ -19,8 +20,9 @@ export default function App() {
         <Stack.Screen name="AccessibilityConfiguration" component={AccessibilityConfiguration}/>
         <Stack.Screen name="PlayerNameConfiguration" component={PlayerNameConfiguration}/>
         <Stack.Screen name="Home" component={Home}/>
-        <Stack.Screen name="Room" component={Room}/>
+        <Stack.Screen name="Lobby" component={Lobby}/>
         <Stack.Screen name="EnterRoom" component={EnterRoom}/>
+        <Stack.Screen name="Game" component={Game}/>
       </Stack.Navigator>
     </NavigationContainer>
   )

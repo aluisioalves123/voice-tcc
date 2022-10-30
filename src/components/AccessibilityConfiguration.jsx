@@ -30,9 +30,15 @@ const AccessibilityConfiguration = ({ navigation }) => {
     }
   }
 
+  const onSpeechError = () => {
+    Speech.speak('não entendi, repita', {onDone: async() => {
+      startListening()
+    }})
+  }
+
   useFocusEffect(
     useCallback(()=>{
-      Voice.onSpeechError = startListening;
+      Voice.onSpeechError = onSpeechError;
       Voice.onSpeechResults = onSpeechResults;
 
       Speech.speak('Diga sim ou não.')
