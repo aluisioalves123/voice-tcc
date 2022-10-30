@@ -1,6 +1,8 @@
 import { SafeAreaView, Text, Button, View } from 'react-native';
 import * as Speech from 'expo-speech'
-import { useEffect } from 'react';
+import { useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+
 import Voice from '@react-native-voice/voice'
 
 import useStore from '../store';
@@ -10,11 +12,12 @@ const AccessibilityConfiguration = ({ navigation }) => {
   const changeVoiceAccessibility = useStore((state) => state.changeVoiceAccessibility)
 
   const startListening = async() => {
-    await Voice.start('pt-BR')
+    Speech.speak('ouvindo', {onDone: async() => {
+      await Voice.start('pt-BR')
+    }})
   }
 
   const onSpeechResults = (result) => {
-    console.log(result)
     if (result.value.includes('sim')) {
       navigation.navigate('PlayerNameConfiguration')
       changeVoiceAccessibility(true)
@@ -24,21 +27,19 @@ const AccessibilityConfiguration = ({ navigation }) => {
     }
   }
 
-  const onSpeechError = () => {
-    console.log('erro')
-    startListening()
-  }
+  useFocusEffect(
+    useCallback(()=>{
+      Voice.onSpeechError = startListening;
+      Voice.onSpeechResults = onSpeechResults;
 
-  useEffect(()=>{
-    Voice.onSpeechError = onSpeechError;
-    Voice.onSpeechResults = onSpeechResults;
+      Speech.speak('Diga sim ou não.')
+      startListening()
 
-    startListening()
-
-    return () => {
-      Voice.destroy().then(Voice.removeAllListeners);
-    }
-  }, [])
+      return () => {
+        Voice.destroy().then(Voice.removeAllListeners);
+      }
+    }, [])
+  )
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>

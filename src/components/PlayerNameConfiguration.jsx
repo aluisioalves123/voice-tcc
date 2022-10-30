@@ -1,38 +1,66 @@
 import { SafeAreaView, Text, Button, View , TextInput} from 'react-native';
 import * as Speech from 'expo-speech'
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
+import { useFocusEffect } from '@react-navigation/native';
+
 import Voice from '@react-native-voice/voice'
 
 import useStore from '../store'
 
 const PlayerNameConfiguration = ({ navigation }) => {
+  const [voiceResult, setVoiceResult] = useState([])
+  const [voiceInterfaceState, setVoiceInterfaceState] = useState('waiting_for_name')
+  const [tempPlayerName, setTempPlayerName] = useState(null)
+
+  const changePlayerName = useStore((state) => state.changePlayerName)
 
   const startListening = async() => {
-    await Voice.start('pt-BR')
+    Speech.speak('Ouvindo', {onDone: async() => {
+      await Voice.start('pt-BR')
+    }})
   }
 
   const onSpeechResults = (result) => {
-    console.log(result)
-    
+    setVoiceResult(result.value)
   }
 
-  const onSpeechError = () => {
-    console.log('erro')
-    Speech.speak('não entendi, poderia repetir?')
+  useFocusEffect(
+    useCallback(()=>{
+      Voice.onSpeechError = startListening;
+      Voice.onSpeechResults = onSpeechResults;
 
-    startListening()
-  }
+      Speech.speak('Diga seu nome por favor')
+      startListening()
 
-  useEffect(()=>{
-    Voice.onSpeechError = onSpeechError;
-    Voice.onSpeechResults = onSpeechResults;
+      return () => {
+        Speech.stop()
+        Voice.destroy().then(Voice.removeAllListeners);
+      }
+    }, [])
+  )
 
-    // startListening()
-
-    return () => {
-      Voice.destroy().then(Voice.removeAllListeners);
-    }
-  }, [])
+  useFocusEffect(
+    useCallback(()=>{
+      if (voiceResult.length) {
+        if (voiceInterfaceState == 'waiting_for_name') {
+          setTempPlayerName(voiceResult[0])
+          console.log(voiceResult[0])
+          Speech.speak(`Seu nome é ${voiceResult[0]}? Diga sim ou não.`)
+          setVoiceInterfaceState('waiting_for_confirmation')
+          startListening()
+        } else if (voiceInterfaceState == 'waiting_for_confirmation') {
+          if (voiceResult.includes('sim')) {
+            changePlayerName(tempPlayerName)
+            navigation.navigate('Home')
+          } else if (voiceResult.includes('não')) {
+            Speech.speak('Diga seu nome novamente')
+            setVoiceInterfaceState('waiting_for_name')
+            startListening()
+          }
+        }
+      }
+    }, [voiceResult])
+  )
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
