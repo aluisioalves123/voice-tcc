@@ -12,7 +12,7 @@ const AccessibilityConfiguration = ({ navigation }) => {
   const changeVoiceAccessibility = useStore((state) => state.changeVoiceAccessibility)
 
   const startListening = async() => {
-    Speech.speak('ouvindo', {onDone: async() => {
+    Speech.speak(' ', {onDone: async() => {
       await Voice.start('pt-BR')
     }})
   }
@@ -24,6 +24,9 @@ const AccessibilityConfiguration = ({ navigation }) => {
     } else if (result.value.includes('não')) {
       navigation.navigate('PlayerNameConfiguration')
       changeVoiceAccessibility(false)
+    } else {
+      Speech.speak('Não entendi, pode repetir?')
+      startListening() 
     }
   }
 

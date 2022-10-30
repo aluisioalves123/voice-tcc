@@ -7,29 +7,28 @@ import Voice from '@react-native-voice/voice'
 
 import useStore from '../store'
 
-const PlayerNameConfiguration = ({ navigation }) => {
+const EnterRoom = ({ navigation }) => {
   const [voiceResult, setVoiceResult] = useState([])
-  const [voiceInterfaceState, setVoiceInterfaceState] = useState('waiting_for_name')
-  const [tempPlayerName, setTempPlayerName] = useState(null)
-
-  const changePlayerName = useStore((state) => state.changePlayerName)
+  const [voiceInterfaceState, setVoiceInterfaceState] = useState('waiting_for_room_name')
+  const [tempRoomName, setTempRoomName] = useState(null)
+  const [roomName, changeRoomName] = useStore((state) => [state.roomName, state.changeRoomName])
 
   const startListening = async() => {
     Speech.speak(' ', {onDone: async() => {
       await Voice.start('pt-BR')
     }})
   }
-
+  
   const onSpeechResults = (result) => {
     setVoiceResult(result.value)
   }
-
+  
   useFocusEffect(
     useCallback(()=>{
       Voice.onSpeechError = startListening;
       Voice.onSpeechResults = onSpeechResults;
 
-      Speech.speak('Diga seu nome por favor')
+      Speech.speak('Diga o nome da sala por favor')
       startListening()
 
       return () => {
@@ -41,15 +40,28 @@ const PlayerNameConfiguration = ({ navigation }) => {
   useFocusEffect(
     useCallback(()=>{
       if (voiceResult.length) {
-        if (voiceInterfaceState == 'waiting_for_name') {
-          setTempPlayerName(voiceResult[0])
-          Speech.speak(`Seu nome é ${voiceResult[0]}? Diga sim ou não.`)
+        if (voiceInterfaceState == 'waiting_for_room_name') {
+          setTempRoomName(voiceResult[0])
+          Speech.speak(`O nome da sala é ${voiceResult[0]}? Diga sim ou não.`)
           setVoiceInterfaceState('waiting_for_confirmation')
           startListening()
         } else if (voiceInterfaceState == 'waiting_for_confirmation') {
           if (voiceResult.includes('sim')) {
-            changePlayerName(tempPlayerName)
-            navigation.navigate('Home')
+            Speech.speak('Aguarde enquanto procuramos a sala', {onDone: ()=> {
+              let room_exists = true
+              if (room_exists) {
+                changeRoomName(tempRoomName)
+                navigation.navigate('Room')
+              } else {
+                Speech.speak('Sala não encontrada, tente outra sala')
+                setTempRoomName(null)
+                setVoiceInterfaceState('waiting_for_name')
+                startListening()
+              }
+            }})
+            // buscar a sala na api
+            // redirecionar para a tela de sala se achar
+            // se nao, dizer que nao achou e pedir pro usuario tentar de novo
           } else if (voiceResult.includes('não')) {
             Speech.speak('Diga seu nome novamente')
             setVoiceInterfaceState('waiting_for_name')
@@ -62,11 +74,11 @@ const PlayerNameConfiguration = ({ navigation }) => {
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
-      <Text className='text-lg'>Nome do usuário</Text>
-      <TextInput className='p-3 rounded border w-80 mb-2' value={tempPlayerName}></TextInput>
+      <Text className='text-lg'>Nome da sala</Text>
+      <TextInput className='p-3 rounded border w-80 mb-2' value={tempRoomName}></TextInput>
       <Button title='Confirmar'></Button>
     </SafeAreaView>
   );
 }
 
-export default PlayerNameConfiguration
+export default EnterRoom
