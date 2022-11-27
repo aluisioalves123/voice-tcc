@@ -1,7 +1,7 @@
 import create from 'zustand'
 
 const useStore = create((set) => ({
-  voiceAccessibility: false,
+  voiceAccessibility: true,
   changeVoiceAccessibility: (voiceAccessibility) => set(() => ({voiceAccessibility: voiceAccessibility})),
   playerName: null,
   changePlayerName: (playerName) => set(() => ({playerName: playerName})),

@@ -14,16 +14,19 @@ const EnterRoom = ({ navigation }) => {
   const [roomName, changeRoomName] = useStore((state) => [state.roomName, state.changeRoomName])
 
   const startListening = async() => {
+    console.log('ouvindo');
     Speech.speak(' ', {onDone: async() => {
       await Voice.start('pt-BR')
     }})
   }
   
   const onSpeechResults = (result) => {
+    console.log(result.value)
     setVoiceResult(result.value)
   }
 
-  const onSpeechError = () => {
+  const onSpeechError = (e) => {
+    console.log('onSpeechError: ', e);
     Speech.speak('não entendi, repita', {onDone: async() => {
       startListening()
     }})

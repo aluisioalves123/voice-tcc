@@ -16,7 +16,7 @@ const Stack = createNativeStackNavigator()
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName='AccessibilityConfiguration' screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName='Game' screenOptions={{ headerShown: false }}>
         <Stack.Screen name="AccessibilityConfiguration" component={AccessibilityConfiguration}/>
         <Stack.Screen name="PlayerNameConfiguration" component={PlayerNameConfiguration}/>
         <Stack.Screen name="Home" component={Home}/>

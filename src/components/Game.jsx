@@ -1,6 +1,6 @@
 import { SafeAreaView, Text, Pressable, View , TextInput} from 'react-native';
 import * as Speech from 'expo-speech'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 
 import useStore from '../store'
@@ -75,30 +75,86 @@ const Game = ({ navigation }) => {
     }
   ]
 
-  let current_question = quiz[0]
-  const [countdown, setCountdown] = useState(null)
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [selectedOption, setSelectedOption] = useState(null)
+  const [answeredOption, setAnsweredOption] = useState(null)
+
+  const [time, setTime] = useState(60)
+  const timerRef = useRef(time);
+
+  const startTimer = () => {
+    timerRef.current = 61
+    const timerId = setInterval(() => {
+      timerRef.current -= 1;
+      if (timerRef.current < 0) {
+        clearInterval(timerId);
+      } else {
+        setTime(timerRef.current);
+      }
+    }, 1000);
+  }
+
+  const stopTimer = () => {
+    timerRef.current = -1
+  }
+
+  const answerQuestion = () => {
+    setAnsweredOption(selectedOption)
+
+    stopTimer()
+  }
+
+  const nextQuestion = () => {
+    if (quiz[currentQuestion + 1] != undefined) {
+      setCurrentQuestion(currentQuestion + 1)
+      setSelectedOption(null)
+      setAnsweredOption(null)
+      startTimer()
+    }
+  }
+
+  const optionBgColor = (option) => {
+    if (answeredOption != null && option == quiz[currentQuestion].answer) {
+      return 'green'
+    }
+
+    if (selectedOption == option) {
+      return 'yellow'
+    }
+
+    return 'white'
+  }
 
   useFocusEffect(
-    useCallback(()=>{
-      let counter = 59
-      setInterval(() =>{
-        counter--
-        setCountdown(countdown)
-      }, 1000);
+    useCallback(() => {
+      startTimer()
+      return () => {
+        stopTimer();
+      };
     }, [])
   )
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
-      <Text className='text-md'>{countdown}</Text>
-      <Text className='text-lg'>{current_question.question}</Text>
-      <View className='flex flex-row mt-3'>
-        {current_question.alternatives.map((alternative, index) => (
-          <Pressable className='wrap p-2 rounded border mr-2' key={index}>
+      <Text className='text-md'>{time}</Text>
+      <Text className='text-lg'>{quiz[currentQuestion].question}</Text>
+      <View className='flex flex-row flex-wrap mt-3 p-2 justify-center'>
+        {quiz[currentQuestion].alternatives.map((alternative, index) => (
+          <Pressable className='p-2 rounded border mr-2 mb-2 basis-2/5'
+                     key={index} onPress={() => setSelectedOption(alternative.option)}
+                     style={{backgroundColor: optionBgColor(alternative.option)}}>
             <Text>{alternative.option}) {alternative.answer}</Text>
           </Pressable>
         ))}
       </View>
+
+      <Pressable className={`p-2 rounded mt-3 bg-blue-800 ${(answeredOption == null) ? '' : 'hidden'}`} onPress={() => answerQuestion()}>
+        <Text className='text-white'>Responder</Text>
+      </Pressable>
+
+      <Pressable className={`p-2 rounded mt-3 bg-blue-800 ${(answeredOption != null) ? '' : 'hidden'}`} onPress={() => nextQuestion()}>
+        <Text className='text-white'>Próxima pergunta</Text>
+      </Pressable>
     </SafeAreaView>
   );
 }
