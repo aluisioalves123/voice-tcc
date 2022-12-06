@@ -1,46 +1,16 @@
 import { SafeAreaView, Text, Button, View } from 'react-native';
-import { NavigationHelpersContext, useFocusEffect } from '@react-navigation/native';
-import * as Speech from 'expo-speech'
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react'
 
-import Voice from '@react-native-voice/voice'
+import useStore from '../store'
 
 const Home = ({ navigation }) => {
 
-  const startListening = async() => {
-    Speech.speak(' ', {onDone: async() => {
-      await Voice.start('pt-BR')
-    }})
-  }
-
-  const onSpeechResults = (result) => {
-    if (result.value.includes('entrar')) {
-      navigation.navigate('EnterRoom')
-    } else if (result.value.includes('criar')) {
-      navigation.navigate('Room')
-    } else {
-      Speech.speak('Não entendi, repita')
-      startListening()
-    }
-  }
-
-  const onSpeechError = () => {
-    Speech.speak('não entendi, repita', {onDone: async() => {
-      startListening()
-    }})
-  }
+  const changeVoiceInterfaceState = useStore((state) => state.changeVoiceInterfaceState)
 
   useFocusEffect(
     useCallback(()=>{
-      Voice.onSpeechError = onSpeechError;
-      Voice.onSpeechResults = onSpeechResults;
-
-      Speech.speak('Diga entrar para entrar, diga criar para criar')
-      startListening()
-
-      return () => {
-        Voice.destroy().then(Voice.removeAllListeners);
-      }
+      changeVoiceInterfaceState('home')
     }, [])
   )
 

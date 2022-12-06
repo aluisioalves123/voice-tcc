@@ -1,5 +1,4 @@
 import { SafeAreaView, Text, Pressable, View , TextInput} from 'react-native';
-import * as Speech from 'expo-speech'
 import { useState, useCallback, useRef } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -79,23 +78,16 @@ const Game = ({ navigation }) => {
   const [selectedOption, setSelectedOption] = useState(null)
   const [answeredOption, setAnsweredOption] = useState(null)
 
-  const [time, setTime] = useState(60)
-  const timerRef = useRef(time);
+  const optionBgColor = (option) => {
+    if (answeredOption != null && option == quiz[currentQuestion].answer) {
+      return 'green'
+    }
 
-  const startTimer = () => {
-    timerRef.current = 61
-    const timerId = setInterval(() => {
-      timerRef.current -= 1;
-      if (timerRef.current < 0) {
-        clearInterval(timerId);
-      } else {
-        setTime(timerRef.current);
-      }
-    }, 1000);
-  }
+    if (selectedOption == option) {
+      return 'yellow'
+    }
 
-  const stopTimer = () => {
-    timerRef.current = -1
+    return 'white'
   }
 
   const answerQuestion = () => {
@@ -113,30 +105,16 @@ const Game = ({ navigation }) => {
     }
   }
 
-  const optionBgColor = (option) => {
-    if (answeredOption != null && option == quiz[currentQuestion].answer) {
-      return 'green'
-    }
-
-    if (selectedOption == option) {
-      return 'yellow'
-    }
-
-    return 'white'
-  }
+  const changeVoiceInterfaceState = useStore((state) => state.changeVoiceInterfaceState)
 
   useFocusEffect(
-    useCallback(() => {
-      startTimer()
-      return () => {
-        stopTimer();
-      };
+    useCallback(()=>{
+      changeVoiceInterfaceState('game')
     }, [])
   )
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
-      <Text className='text-md'>{time}</Text>
       <Text className='text-lg'>{quiz[currentQuestion].question}</Text>
       <View className='flex flex-row flex-wrap mt-3 p-2 justify-center'>
         {quiz[currentQuestion].alternatives.map((alternative, index) => (

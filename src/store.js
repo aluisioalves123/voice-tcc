@@ -7,6 +7,8 @@ const useStore = create((set) => ({
   changePlayerName: (playerName) => set(() => ({playerName: playerName})),
   roomName: null,
   changeRoomName: (roomName) => set(() => ({roomName: roomName})),
+  voiceInterfaceState: null,
+  changeVoiceInterfaceState: (voiceInterfaceState) => set(() => ({voiceInterfaceState: voiceInterfaceState})),
 }))
 
 export default useStore

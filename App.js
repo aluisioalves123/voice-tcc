@@ -9,14 +9,15 @@ import Lobby from './src/components/Lobby';
 import EnterRoom from './src/components/EnterRoom';
 import Game from './src/components/Game';
 
-import { useEffect } from 'react';
+import VoiceInterface from './src/components/VoiceInterface';
 
 const Stack = createNativeStackNavigator()
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName='Game' screenOptions={{ headerShown: false }}>
+      <VoiceInterface />
+      <Stack.Navigator initialRouteName='AccessibilityConfiguration' screenOptions={{ headerShown: false }}>
         <Stack.Screen name="AccessibilityConfiguration" component={AccessibilityConfiguration}/>
         <Stack.Screen name="PlayerNameConfiguration" component={PlayerNameConfiguration}/>
         <Stack.Screen name="Home" component={Home}/>
