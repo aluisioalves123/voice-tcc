@@ -37,15 +37,17 @@
       [
         "@react-native-voice/voice",
         {
-          "microphonePermission": "Allow Voice to Text Tutorial to access the microphone",
-          "speechRecognitionPermission": "Allow Voice to Text Tutorial to securely recognize user speech"
+          "microphonePermission": "Allow Voice to Text to access the microphone",
+          "speechRecognitionPermission": "Allow Voice to Text to securely recognize user speech"
         }
       ]
     ],
     "extra": {
       "eas": {
         "projectId": "96236c91-66fb-41b1-9f8c-8a4038cf3c67"
-      }
+      },
+      "apiUrl": "https://be33-200-149-81-175.ngrok.io",
+      "webSocketUrl": "ws://be33-200-149-81-175.ngrok.io/cable"
     }
   }
 }
