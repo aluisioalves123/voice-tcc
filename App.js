@@ -1,6 +1,7 @@
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { navigationRef } from './RootNavigation';
 
 import AccessibilityConfiguration from './src/components/AccessibilityConfiguration'
 import PlayerNameConfiguration from './src/components/PlayerNameConfiguration';
@@ -15,7 +16,7 @@ const Stack = createNativeStackNavigator()
 
 export default function App() {
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <VoiceInterface />
       <Stack.Navigator initialRouteName='AccessibilityConfiguration' screenOptions={{ headerShown: false }}>
         <Stack.Screen name="AccessibilityConfiguration" component={AccessibilityConfiguration}/>
