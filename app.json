@@ -46,8 +46,8 @@
       "eas": {
         "projectId": "96236c91-66fb-41b1-9f8c-8a4038cf3c67"
       },
-      "apiUrl": "https://be33-200-149-81-175.ngrok.io",
-      "webSocketUrl": "ws://be33-200-149-81-175.ngrok.io/cable"
+      "apiUrl": "https://spring-mountain-9055.fly.dev",
+      "webSocketUrl": "wss://spring-mountain-9055.fly.dev/cable"
     }
   }
 }
