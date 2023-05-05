@@ -291,11 +291,13 @@ const VoiceInterface = () => {
   }
 
   const onSpeechError = () => {
-    let message = 'repita'
-    console.log(`> ${message}`)
-    Speech.speak(message, {onDone: async() => {
-      startListening()
-    }})
+    if (useStore.getState().voiceAccessibility) {
+      let message = 'repita'
+      console.log(`> ${message}`)
+      Speech.speak(message, {onDone: async() => {
+        startListening()
+      }})
+    }
   }
 
   useFocusEffect(

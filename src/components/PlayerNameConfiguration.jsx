@@ -1,4 +1,4 @@
-import { View, Button, TextInput} from 'react-native';
+import { View, Button, TextInput, Alert} from 'react-native';
 import { useState } from 'react'
 
 import { createUser } from '../api/users'
@@ -20,8 +20,9 @@ const PlayerNameConfiguration = ({ navigation }) => {
   };
 
   return (
-    <View>
-      <TextInput
+    <View className='flex-1 items-center justify-center bg-gray-100'>
+      <TextInput  
+        className='p-3 rounded border w-80 mb-2'
         placeholder="Digite seu nome"
         onChangeText={setName}
         value={name}
