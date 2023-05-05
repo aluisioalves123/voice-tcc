@@ -1,26 +1,35 @@
-import { SafeAreaView, Text, Button, TextInput} from 'react-native';
-import { useState, useCallback } from 'react'
+import { View, Button, TextInput} from 'react-native';
+import { useState } from 'react'
 
-import { useFocusEffect } from '@react-navigation/native';
+import { createUser } from '../api/users'
 
 import useStore from '../store'
 const PlayerNameConfiguration = ({ navigation }) => {
-  const [tempPlayerName, setTempPlayerName] = useState(null)
-  const changeVoiceInterfaceState = useStore((state) => state.changeVoiceInterfaceState)
+  const changePlayerName = useStore((state) => state.changePlayerName)
 
-  useFocusEffect(
-    useCallback(()=>{
-      changeVoiceInterfaceState('player_name_configuration')
-    }, [])
-  )
+  const [name, setName] = useState('');
+
+  const handlePress = () => {
+    if (name.trim() === '') {
+      Alert.alert('Erro', 'Por favor, preencha seu nome');
+      return;
+    }
+    changePlayerName(name)
+    createUser(name)
+    navigation.navigate('Home')
+  };
 
   return (
-    <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
-      <Text className='text-lg'>Nome do usuário</Text>
-      <TextInput className='p-3 rounded border w-80 mb-2' value={tempPlayerName}></TextInput>
-      <Button title='Confirmar'></Button>
-    </SafeAreaView>
+    <View>
+      <TextInput
+        placeholder="Digite seu nome"
+        onChangeText={setName}
+        value={name}
+      />
+      <Button title="Enviar" onPress={handlePress} />
+    </View>
   );
 }
 
 export default PlayerNameConfiguration
+

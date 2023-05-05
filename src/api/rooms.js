@@ -56,8 +56,10 @@ const connectRoom = async () => {
   webSocket.onmessage = (event) => {
     let data = JSON.parse(event.data)
 
+
     if (data.message != undefined) {
       let message = JSON.parse(data.message)
+      console.log(message)
       switch(message['message_type']) {
         case 'room_info':
           useStore.setState({roomUserCount: message['user_count']})
@@ -86,4 +88,20 @@ const connectRoom = async () => {
   }
 }
 
-export { getRoom, createRoom, connectRoom }
+const disconnectRoom = async () => {
+  console.log("abuble")
+  let webSocket = useStore.getState().webSocket
+  let roomId = useStore.getState().roomId
+
+  const unsubMessage = {
+    command: "unsubscribe",
+    identifier: JSON.stringify({ 
+      channel: "RoomsChannel", 
+      room_id: roomId
+    })
+  }
+  
+  webSocket.send(JSON.stringify(unsubMessage))
+}
+
+export { getRoom, createRoom, connectRoom, disconnectRoom }

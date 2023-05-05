@@ -1,22 +1,32 @@
 import { SafeAreaView, Text, Button, View , TextInput} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react'
 
 import useStore from '../store'
 
+import { disconnectRoom } from '../api/rooms'
+import { initGame } from '../api/game'
+
 const Lobby = ({ navigation }) => {
 
-  const changeVoiceInterfaceState = useStore((state) => state.changeVoiceInterfaceState)
   const roomUserCount = useStore((state) => state.roomUserCount)
-
   const roomCode = useStore((state) => state.roomCode)
+  const roomId = useStore((state) => state.roomId)
+
+  const handleGameStart = () => {
+    initGame(roomId)
+    navigation.navigate('Game')
+  };
+
+  const handleRoomDisconnect = async () => {
+    navigation.navigate('Home')
+    disconnectRoom()
+  };
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
       <Text className='text-lg'>Sala {roomCode}</Text>
       <Text className='text-xl'>{roomUserCount}/4 jogadores</Text>
-      <Button title='Iniciar partida'/>
-      <Button title='Sair da sala'/>
+      <Button title='Iniciar partida' onPress={handleGameStart}/>
+      <Button title='Sair da sala' onPress={handleRoomDisconnect}/>
     </SafeAreaView>
   );
 }
