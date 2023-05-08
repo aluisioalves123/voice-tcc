@@ -59,7 +59,6 @@ const connectRoom = async () => {
 
     if (data.message != undefined) {
       let message = JSON.parse(data.message)
-      console.log(message)
       switch(message['message_type']) {
         case 'room_info':
           useStore.setState({roomUserCount: message['user_count']})

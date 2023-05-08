@@ -1,7 +1,5 @@
-import { SafeAreaView, Text, Pressable, View , TextInput} from 'react-native';
-import { useState, useCallback, useRef } from 'react'
-import { useFocusEffect } from '@react-navigation/native';
-
+import { Text, View, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect } from 'react'
 import useStore from '../store'
 
 import { registerAnswer } from '../api/game'
@@ -9,46 +7,63 @@ import { registerAnswer } from '../api/game'
 const Game = ({ navigation }) => {
 
   const currentQuestion = useStore(state => state.currentQuestion)
-  const [selectedOption, setSelectedOption] = useState(null)
-  const [answeredOption, setAnsweredOption] = useState(null)
+  const roomId = useStore(state => state.roomId)
+  const scoreboard = useStore(state => state.scoreboard)
 
-  const optionBgColor = (option) => {
-    if (answeredOption != null && option == quiz[currentQuestion].answer) {
-      return 'green'
+  const [selectedAlternative, setSelectedAlternative] = useState(null);
+
+  const handleSelectAlternative = (alternative) => {
+    setSelectedAlternative(alternative);
+  };
+
+  const handleSubmitAnswer = () => {
+    if (selectedAlternative == null) {
+      Alert.alert('Erro', 'Por favor, selecione uma opção');
     }
+    // Verifica se a alternativa selecionada é a correta
+    const isCorrect = selectedAlternative.correct
+    // Lógica para tratar a resposta do usuário (por exemplo, exibir uma mensagem de acerto ou erro)
+    registerAnswer(selectedAlternative.position, roomId)
 
-    if (selectedOption == option) {
-      return 'yellow'
+    // Reinicia o estado da alternativa selecionada
+    setSelectedAlternative(null);
+  };
+
+  useEffect(() => {
+    if (scoreboard != null) {
+      navigation.navigate("Scoreboard")
     }
-
-    return 'white'
-  }
-
-  const answerQuestion = () => {
-    registerAnswer(selectedOption, roomId)
-  }
-
-  const changeVoiceInterfaceState = useStore((state) => state.changeVoiceInterfaceState)
-
-  useFocusEffect(
-    useCallback(()=>{
-      changeVoiceInterfaceState('game')
-    }, [])
-  )
+  }, [scoreboard])
 
   return (
-    <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
-      <Text className='text-lg'>{currentQuestion.question}</Text>
-      <View className='flex flex-row flex-wrap mt-3 p-2 justify-center'>
-        {currentQuestion.alternatives.map((alternative, index) => (
-          <Pressable className='p-2 rounded border mr-2 mb-2 basis-2/5'
-                     key={index} onPress={() => setSelectedOption(alternative.position)}
-                     style={{backgroundColor: optionBgColor(alternative.position)}}>
-            <Text>{alternative.position}) {alternative.answer}</Text>
-          </Pressable>
-        ))}
-      </View>
-    </SafeAreaView>
+    <View className="flex-1 bg-gray-100">
+      {currentQuestion && (
+        <>
+          <Text className="text-xl font-bold text-center mt-8">{currentQuestion.question}</Text>
+          <View className="flex flex-col mt-8">
+            {currentQuestion.alternatives.map((alternative) => (
+              <TouchableOpacity
+                key={alternative.id}
+                className={`rounded-lg p-4 mb-4 ${
+                  selectedAlternative === alternative
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-700'
+                }`}
+                onPress={() => handleSelectAlternative(alternative)}
+              >
+                <Text className="text-lg">{alternative.body}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TouchableOpacity
+            className="bg-blue-500 py-4 px-8 rounded-lg self-center mt-8"
+            onPress={handleSubmitAnswer}
+          >
+            <Text className="text-white font-bold">Enviar</Text>
+          </TouchableOpacity>
+        </>
+      )}
+    </View>
   );
 }
 

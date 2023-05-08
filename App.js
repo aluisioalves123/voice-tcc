@@ -9,6 +9,7 @@ import Home from './src/components/Home';
 import Lobby from './src/components/Lobby';
 import EnterRoom from './src/components/EnterRoom';
 import Game from './src/components/Game';
+import Scoreboard from './src/components/Scoreboard';
 
 import VoiceInterface from './src/components/VoiceInterface';
 
@@ -25,6 +26,7 @@ export default function App() {
         <Stack.Screen name="Lobby" component={Lobby}/>
         <Stack.Screen name="EnterRoom" component={EnterRoom}/>
         <Stack.Screen name="Game" component={Game}/>
+        <Stack.Screen name="Scoreboard" component={Scoreboard}/>
       </Stack.Navigator>
     </NavigationContainer>
   )
