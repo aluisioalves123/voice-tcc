@@ -11,6 +11,7 @@ const Game = ({ navigation }) => {
   const scoreboard = useStore(state => state.scoreboard)
 
   const [selectedAlternative, setSelectedAlternative] = useState(null);
+  const [optionSelected, setOptionSelected] = useState(false);
 
   const handleSelectAlternative = (alternative) => {
     setSelectedAlternative(alternative);
@@ -20,13 +21,10 @@ const Game = ({ navigation }) => {
     if (selectedAlternative == null) {
       Alert.alert('Erro', 'Por favor, selecione uma opção');
     }
-    // Verifica se a alternativa selecionada é a correta
-    const isCorrect = selectedAlternative.correct
-    // Lógica para tratar a resposta do usuário (por exemplo, exibir uma mensagem de acerto ou erro)
-    registerAnswer(selectedAlternative.position, roomId)
 
-    // Reinicia o estado da alternativa selecionada
-    setSelectedAlternative(null);
+    setOptionSelected(true)
+
+    registerAnswer(selectedAlternative.position, roomId)
   };
 
   useEffect(() => {
@@ -34,6 +32,13 @@ const Game = ({ navigation }) => {
       navigation.navigate("Scoreboard")
     }
   }, [scoreboard])
+
+  useEffect(() => {
+    if (currentQuestion != null) {
+      setSelectedAlternative(null);
+      setOptionSelected(false)
+    }
+  }, [currentQuestion])
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -55,12 +60,19 @@ const Game = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
-          <TouchableOpacity
-            className="bg-blue-500 py-4 px-8 rounded-lg self-center mt-8"
-            onPress={handleSubmitAnswer}
-          >
-            <Text className="text-white font-bold">Enviar</Text>
-          </TouchableOpacity>
+          {optionSelected === false && (
+            <TouchableOpacity
+              className="bg-blue-500 py-4 px-8 rounded-lg self-center mt-8"
+              onPress={handleSubmitAnswer}
+            >
+              <Text className="text-white font-bold">Enviar</Text>
+            </TouchableOpacity>
+          )}
+
+          {optionSelected === true && (
+            <Text className="text-xl font-bold text-center">Resposta registrada, aguardando os outros jogadores</Text>
+          )}
+          
         </>
       )}
     </View>
