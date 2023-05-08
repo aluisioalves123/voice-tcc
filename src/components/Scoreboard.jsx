@@ -10,8 +10,9 @@ const Scoreboard = ({ navigation }) => {
 
   const handleRoomDisconnect = async () => {
     navigation.navigate('Home')
-    disconnectRoom()
+    changeCurrentQuestion(null)
     setScoreboard(null)
+    disconnectRoom()
   };
 
   const handlePlayAgain = async () => {

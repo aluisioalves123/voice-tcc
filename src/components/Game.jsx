@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, Alert } from 'react-native';
+import { Text, View, TouchableOpacity, Alert, Button } from 'react-native';
 import { useState, useEffect } from 'react'
 import useStore from '../store'
 
@@ -6,7 +6,7 @@ import { registerAnswer } from '../api/game'
 
 const Game = ({ navigation }) => {
 
-  const currentQuestion = useStore(state => state.currentQuestion)
+  const [currentQuestion, changeCurrentQuestion] = useStore(state => [state.currentQuestion, state.changeCurrentQuestion])
   const roomId = useStore(state => state.roomId)
   const scoreboard = useStore(state => state.scoreboard)
 
@@ -25,6 +25,12 @@ const Game = ({ navigation }) => {
     setOptionSelected(true)
 
     registerAnswer(selectedAlternative.position, roomId)
+  };
+
+  const handleRoomDisconnect = async () => {
+    navigation.navigate('Home')
+    changeCurrentQuestion(null)
+    disconnectRoom()
   };
 
   useEffect(() => {
@@ -68,10 +74,18 @@ const Game = ({ navigation }) => {
               <Text className="text-white font-bold">Enviar</Text>
             </TouchableOpacity>
           )}
+          
 
           {optionSelected === true && (
             <Text className="text-xl font-bold text-center">Resposta registrada, aguardando os outros jogadores</Text>
           )}
+
+          <TouchableOpacity
+            className="bg-blue-500 py-4 px-8 rounded-lg self-center mt-8"
+            onPress={handleRoomDisconnect}
+          >
+            <Text className="text-white font-bold">Sair da sala</Text>
+          </TouchableOpacity>
           
         </>
       )}

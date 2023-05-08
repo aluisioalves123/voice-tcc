@@ -133,7 +133,7 @@ const VoiceInterface = () => {
       }
     },
     'create_room': {
-      'message': 'Criar?',
+      'message': 'Deseja criar uma sala? Diga sim ou não',
       'possible_next_states': {
         'sim': async () => {
           await createRoom()
