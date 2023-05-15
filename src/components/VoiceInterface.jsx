@@ -2,16 +2,15 @@ import * as Speech from 'expo-speech'
 import Voice from '@react-native-voice/voice'
 
 import { useFocusEffect } from '@react-navigation/native';
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useImperativeHandle, forwardRef, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native';
 import useStore from '../store'
 
 import { createUser } from '../api/users'
-import { connectRoom, createRoom, getRoom } from '../api/rooms'
+import { connectRoom, createRoom, getRoom, disconnectRoom } from '../api/rooms'
 import { initGame, registerAnswer } from '../api/game'
-import { useEffect } from 'react';
 
-const VoiceInterface = () => {
+const VoiceInterface = forwardRef((props, ref) => {
   const stateRef = useRef()
 
   const [voiceAccessibility, changeVoiceAccessibility] = useStore((state) => [state.voiceAccessibility, state.changeVoiceAccessibility])
@@ -23,10 +22,13 @@ const VoiceInterface = () => {
   const currentQuestion = useStore((state) => state.currentQuestion)
   stateRef.currentQuestion = currentQuestion
 
+  const roomUserCount = useStore((state) => state.roomUserCount)
+  stateRef.roomUserCount = roomUserCount
+
   const scoreboard = useStore((state) => state.scoreboard)
   stateRef.scoreboard = scoreboard
 
-  const [userAnswer, setUserAnswer] = useState({})
+  const [userAnswer, setUserAnswer] = useState(null)
   stateRef.userAnswer = userAnswer
 
   const position_to_letter = {
@@ -46,11 +48,24 @@ const VoiceInterface = () => {
         message += `letra ${position_to_letter[alternative.position]}, ${alternative.body}. `
       })
 
-      message += 'Você entendeu?'
-
       return message
     } else {
       return 'no question'
+    }
+  }
+
+  const currentUserAnswer = () => {
+    let user_answer = stateRef.userAnswer
+    let currentQuestion = stateRef.currentQuestion
+
+    console.log(user_answer)
+    if (currentQuestion != null && userAnswer != null) {
+      let answer_letter = position_to_letter[user_answer]
+
+      let answer_alternative = stateRef.currentQuestion.alternatives.find(alternative => alternative.position == user_answer)
+      let answer_body = answer_alternative.body
+  
+      return `letra ${answer_letter}, ${answer_body}?`
     }
   }
 
@@ -75,6 +90,12 @@ const VoiceInterface = () => {
   }, [currentQuestion])
 
   useEffect(() => {
+    if (roomUserCount != null && voiceInterfaceState == 'player_lobby' || voiceInterfaceState == 'admin_lobby') {
+      Speech.speak(`${roomUserCount} jogadores estão conectados a sala agora`)
+    }
+  }, [roomUserCount])
+
+  useEffect(() => {
     if (scoreboard != null) {
       changeVoiceInterfaceState('end_game')
     }
@@ -82,12 +103,12 @@ const VoiceInterface = () => {
   
   const possible_states = {
     'configuration_voice_accessibility': {
-      'message': 'acessibilidade?',
+      'message': 'Seja bem-vindo ao jogo de perguntas e respostas acessíveis, você gostaria de jogar com o modo de acessibilidade ligado? Aperte em qualquer parte da tela, espere o som de confirmação e responda sim ou não. Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer.',
       'possible_next_states': {
         'sim': () => {
           changeVoiceAccessibility(true)
           changeVoiceInterfaceState('player_name_configuration')
-          navigation.navigate('PlayerNameConfiguration')
+          navigation.navigate('MicrophoneButton')
         },
         'não': () => {
           changeVoiceAccessibility(false)
@@ -97,7 +118,7 @@ const VoiceInterface = () => {
       }
     },
     'player_name_configuration': {
-      'message': 'qual o seu nome?',
+      'message': 'Modo de acessibilidade ligado. Para começarmos, preciso saber o seu nome, qual é o seu nome?',
       'possible_next_states': {
         'any': () => { 
           changePlayerName(stateRef.voiceResults[0])
@@ -106,11 +127,10 @@ const VoiceInterface = () => {
       }
     },
     'confirm_player_name': {
-      'message': `o seu nome é ${useStore.getState().playerName}?`,
+      'message': `Entendi, diga sim para confirmar que seu nome é ${useStore.getState().playerName}. Se não, diga não para repetir`,
       'possible_next_states': {
         'sim': () => {
           createUser(useStore.getState().playerName)
-          navigation.navigate('Home')
           changeVoiceInterfaceState('home')
           
         },
@@ -121,10 +141,9 @@ const VoiceInterface = () => {
       }
     },
     'home': {
-      'message': 'Criar ou entrar?',
+      'message': 'Você agora está no menu principal do jogo, aqui você pode escolher entrar em uma sala já existente ou criar uma sala nova. Para criar uma nova sala diga criar, mas se quiser entrar em uma sala diga entrar.',
       'possible_next_states': {
         'entrar': () => {
-          navigation.navigate('EnterRoom')
           changeVoiceInterfaceState('enter_room')
         },
         'criar': () => {
@@ -133,7 +152,7 @@ const VoiceInterface = () => {
       }
     },
     'create_room': {
-      'message': 'Criar?',
+      'message': 'Diga sim para confirmar a criação da sala, mas se não quiser criar diga não e você será levado para o menu principal',
       'possible_next_states': {
         'sim': async () => {
           await createRoom()
@@ -142,19 +161,15 @@ const VoiceInterface = () => {
 
           await connectRoom()
 
-          Speech.speak(`Sala conectada com sucesso`)
-
-          navigation.navigate('Lobby')
           changeVoiceInterfaceState('admin_lobby')
         },
         'não': () => {
-          navigation.navigate('Home')
           changeVoiceInterfaceState('home')
         }
       }
     },
     'enter_room': {
-      'message': 'Nome da sala?',
+      'message': 'Entrando em uma sala, qual seria o nome da sala que deseja entrar?',
       'possible_next_states': {
         'any': () => {
           changeRoomCode(stateRef.voiceResults[0])
@@ -163,7 +178,7 @@ const VoiceInterface = () => {
       }
     },
     'confirm_room_code': {
-      'message': `Sala ${useStore.getState().roomCode}?`,
+      'message': `Diga sim para confirmar a entrada na sala de nome ${useStore.getState().roomCode}. Diga não para repetir o nome da sala.`,
       'possible_next_states': {
         'sim': async () => {
           Speech.speak('Procurando sala')
@@ -172,7 +187,6 @@ const VoiceInterface = () => {
 
           await connectRoom()
 
-          navigation.navigate('Lobby')
           changeVoiceInterfaceState('player_lobby')
 
         },
@@ -182,7 +196,7 @@ const VoiceInterface = () => {
       }
     },
     'room_not_found': {
-      'message': 'Não encontrada, de novo?',
+      'message': 'Sala não encontrada, Diga sim para tentar novamente ou diga não para sair e ir até o menu principal.',
       'possible_next_states': {
         'sim': () => {
           changeVoiceInterfaceState('enter_room')
@@ -193,64 +207,61 @@ const VoiceInterface = () => {
       }
     },
     'player_lobby': {
-      'message': 'Aguardando, diga sair para sair',
+      'message': 'Você está na sala esperando o jogo ser iniciado, caso queira sair da sala diga sair para voltar ao menu principal',
       'possible_next_states': {
         'sair': () => {
-          navigation.navigate('Home')
           changeVoiceInterfaceState('home')
+          disconnectRoom()
         }
       }
     },
     'admin_lobby': {
-      'message': 'Na sala, iniciar ou sair',
+      'message': 'Você é o dono da sala, para começar a partida diga iniciar, mas se quiser sair da sala diga sair. Vamos te notificar cada vez que um novo participante entrar ou sair da sala. Para mais informações sobre a sala diga informação',
       'possible_next_states': {
         'iniciar': () => {
           let roomId = useStore.getState().roomId
           initGame(roomId)
         },
+        'informação': () => {
+          Speech.speak(`O nome da sala é ${useStore.getState().roomCode}, no momento há ${useStore.getState().roomUserCount} jogadores na sala. A sala está aberta para jogadores entrarem`)
+        },
         'sair': () => {
-          navigation.navigate('Home')
           changeVoiceInterfaceState('home')
+          disconnectRoom()
         }
       }
     },
     'game': {
-      'message': 'Começou o jogo',
+      'message': 'O jogo foi iniciado. Eu vou ler as perguntas para você e você me responde sempre dizendo letra A, B, C ou D. Ou seja, sempre a palavra letra e em seguida a letra que você deseja. Exemplo de resposta: letra A',
       'final_state': true
     },
     'read_question': {
       'message': `${ read_current_question() }`,
       'possible_next_states': {
-        'sim': () => {
-          changeVoiceInterfaceState('wait_for_user_answer')
+        'letra a': () => {
+          setUserAnswer('first_alternative')
+          changeVoiceInterfaceState('confirm_user_answer')
         },
-        'não': () => {
-          changeVoiceInterfaceState(null)
-          changeVoiceInterfaceState('read_question')
-        }
-      }
-    },
-    'wait_for_user_answer': {
-      'message': 'Qual é sua resposta?',
-      'possible_next_states': {
-        'any': () => {
-          let possible_valid_answers = ['letra a', 'letra b', 'letra c', 'letra d']
-          let voice_result = stateRef.voiceResults[0]
-          if (possible_valid_answers.includes(voice_result)) {
-            setUserAnswer(voice_result)
-            changeVoiceInterfaceState('confirm_user_answer')
-          } else {
-            onSpeechError()
-          }
+        'letra b': () => {
+          setUserAnswer('second_alternative')
+          changeVoiceInterfaceState('confirm_user_answer')
+        },
+        'letra c': () => {
+          setUserAnswer('third_alternative')
+          changeVoiceInterfaceState('confirm_user_answer')
+        },
+        'letra d': () => {
+          setUserAnswer('fourth_alternative')
+          changeVoiceInterfaceState('confirm_user_answer')
         }
       }
     },
     'confirm_user_answer': {
-      'message': `Sua resposta é a ${stateRef.userAnswer}? Diga sim ou não`,
+      'message': `Sua resposta é a ${ currentUserAnswer() }? Diga sim ou não`,
       'possible_next_states': {
         'sim': () => {
           let roomId = useStore.getState().roomId
-          let letter_answer = stateRef.userAnswer.split(' ')[1]
+          let letter_answer = position_to_letter[stateRef.userAnswer]
 
           registerAnswer(letter_answer, roomId)
           changeVoiceInterfaceState('wait_for_next_question')
@@ -265,14 +276,15 @@ const VoiceInterface = () => {
       'final_state': true
     },
     'end_game': {
-      'message': `O jogo acabou, o placar final foi: ${ read_score_board() } Deseja jogar novamente?`,
+      'message': `O jogo acabou, o placar final foi: ${ read_score_board() }. Diga jogar para começar uma nova partida ou diga sair para voltar ao menu principal.`,
       'possible_next_states': {
-        'sim': () => {
+        'jogar': () => {
           let roomId = useStore.getState().roomId
           initGame(roomId)
         },
-        'não': () => {
+        'sair': () => {
           changeVoiceInterfaceState('home')
+          disconnectRoom()
         }
       }
     }
@@ -285,18 +297,28 @@ const VoiceInterface = () => {
   stateRef.voiceResults = voiceResults
 
   const startListening = async() => {
-    Speech.speak(' ', {onDone: async() => {
+    if (voiceAccessibility) {
       await Voice.start('pt-BR')
-    }})
+    }
+  }
+
+  const stopSpeech = async() => {
+    await Speech.stop()
   }
 
   const onSpeechError = () => {
     if (useStore.getState().voiceAccessibility) {
-      let message = 'repita'
-      console.log(`> ${message}`)
-      Speech.speak(message, {onDone: async() => {
-        startListening()
-      }})
+      let messages = [
+        'Não consegui entender, poderia repetir?',
+        'Por favor, repita o que você disse',
+        'Desculpe, mas não entendi, poderia repetir por favor?',
+        'Hmm não consegui compreender, repita por favor'
+      ]
+
+      const randomIndex = Math.floor(Math.random() * messages.length);
+      const randomMessage = messages[randomIndex]
+      console.log(`> ${randomMessage}`)
+      Speech.speak(randomMessage)
     }
   }
 
@@ -313,10 +335,16 @@ const VoiceInterface = () => {
 
   const onSpeechResults = (results) => {
     setVoiceResults(results['value'])
-    console.log(results)
 
     let voiceInterfaceState = useStore.getState().voiceInterfaceState
     let voice_state = possible_states[voiceInterfaceState]
+    
+    let repeatMessage = results['value'].map(((result) => {
+      if (result.includes('repita') || result.includes('repetir')) {
+        return true
+      }
+    }))[0]
+
     let possible_answers = Object.keys(voice_state['possible_next_states'])
 
     let valid_answer_key = results['value'].map((result) => {
@@ -329,7 +357,10 @@ const VoiceInterface = () => {
     let fallback_option = voice_state['possible_next_states']['any']
     
     let next_state = valid_answer || fallback_option
-    if (next_state != undefined) {
+    if (repeatMessage == true) {
+      changeVoiceInterfaceState(null)
+      changeVoiceInterfaceState(voiceInterfaceState)
+    } else if (next_state != undefined) {
       next_state()
     } else { 
       onSpeechError()
@@ -338,19 +369,23 @@ const VoiceInterface = () => {
 
   useFocusEffect(
     useCallback(()=>{
-      console.log(voiceInterfaceState)
       if (voiceInterfaceState != null && voiceAccessibility != false) {
         let voice_state = possible_states[voiceInterfaceState]
 
         Speech.speak(voice_state['message'])
         console.log(`> ${voice_state['message']}`)
         
-        if (voice_state.final_state != true){ 
-          startListening()
-        }
+        // if (voice_state.final_state != true){ 
+        //   startListening()
+        // }
       }
     }, [voiceInterfaceState])
   )
-}
+
+  useImperativeHandle(ref, () => ({
+    startListening: startListening,
+    stopSpeech: stopSpeech
+  }));
+})
 
 export default VoiceInterface

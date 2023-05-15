@@ -88,7 +88,6 @@ const connectRoom = async () => {
 }
 
 const disconnectRoom = async () => {
-  console.log("abuble")
   let webSocket = useStore.getState().webSocket
   let roomId = useStore.getState().roomId
 
