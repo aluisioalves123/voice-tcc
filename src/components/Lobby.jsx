@@ -1,4 +1,5 @@
-import { SafeAreaView, Text, Button, View , TextInput} from 'react-native';
+import { SafeAreaView, Text, Button } from 'react-native';
+import { useEffect } from 'react'
 
 import useStore from '../store'
 
@@ -8,6 +9,7 @@ import { initGame } from '../api/game'
 const Lobby = ({ navigation }) => {
 
   const roomUserCount = useStore((state) => state.roomUserCount)
+  const currentQuestion = useStore(state => state.currentQuestion)
   const roomCode = useStore((state) => state.roomCode)
   const roomId = useStore((state) => state.roomId)
 
@@ -18,8 +20,15 @@ const Lobby = ({ navigation }) => {
 
   const handleRoomDisconnect = async () => {
     navigation.navigate('Home')
+    changeCurrentQuestion(null)
     disconnectRoom()
   };
+
+  useEffect(() => {
+    if (currentQuestion != null) {
+      navigation.navigate("Game")
+    }
+  }, [currentQuestion])
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
