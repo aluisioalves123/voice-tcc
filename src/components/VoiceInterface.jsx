@@ -362,7 +362,7 @@ const VoiceInterface = forwardRef((props, ref) => {
     } else if (next_state != undefined) {
       next_state()
     } else { 
-      onSpeechError()
+      Speech.speak("Entendi o que você disse, mas não condiz com as opções. Se quiser, posso repetir as opções, para isso diga repita")
     }
   }
 
