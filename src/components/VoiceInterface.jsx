@@ -58,7 +58,6 @@ const VoiceInterface = forwardRef((props, ref) => {
     let user_answer = stateRef.userAnswer
     let currentQuestion = stateRef.currentQuestion
 
-    console.log(user_answer)
     if (currentQuestion != null && userAnswer != null) {
       let answer_letter = position_to_letter[user_answer]
 
