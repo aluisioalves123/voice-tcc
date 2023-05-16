@@ -17,6 +17,8 @@ import Scoreboard from './src/components/Scoreboard';
 import VoiceInterface from './src/components/VoiceInterface';
 import MicrophoneButton from './src/components/MicrophoneButton';
 
+import { useKeepAwake } from 'expo-keep-awake';
+
 const Stack = createNativeStackNavigator()
 
 export default function App() {
@@ -29,9 +31,11 @@ export default function App() {
       voiceInterfaceRef.current.startListening();
     }
   };
+  
+  useKeepAwake();
 
   return (
-    <TouchableOpacity style={{ flex: 1 }} onPress={handlePress}>
+    <TouchableOpacity style={{ flex: 1 }} onPressIn={handlePress}>
       <NavigationContainer ref={navigationRef}>
         <VoiceInterface ref={voiceInterfaceRef} />
         <Stack.Navigator initialRouteName='AccessibilityConfiguration' screenOptions={{ headerShown: false }}>

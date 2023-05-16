@@ -231,8 +231,12 @@ const VoiceInterface = forwardRef((props, ref) => {
       }
     },
     'game': {
-      'message': 'O jogo foi iniciado. Eu vou ler as perguntas para você e você me responde sempre dizendo letra A, B, C ou D. Ou seja, sempre a palavra letra e em seguida a letra que você deseja. Exemplo de resposta: letra A',
-      'final_state': true
+      'message': 'O jogo foi iniciado. Eu vou ler as perguntas para você e você me responde sempre dizendo letra A, B, C ou D. Ou seja, sempre a palavra letra e em seguida a letra que você deseja. Exemplo de resposta: letra A. Se não quiser ouvir essa introdução da próxima vez basta me interromper e dizer pular.',
+      'possible_next_states': {
+        'pular': () => {
+          changeVoiceInterfaceState('read_question')
+        }
+      }
     },
     'read_question': {
       'message': `${ read_current_question() }`,
