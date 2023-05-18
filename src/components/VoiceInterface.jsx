@@ -102,7 +102,7 @@ const VoiceInterface = forwardRef((props, ref) => {
   
   const possible_states = {
     'configuration_voice_accessibility': {
-      'message': 'Seja bem-vindo ao jogo de perguntas e respostas acessíveis, você gostaria de jogar com o modo de acessibilidade ligado? Aperte em qualquer parte da tela, espere o som de confirmação e responda sim ou não. Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer.',
+      'message': 'Seja bem-vindo ao jogo de perguntas e respostas acessiveis, você gostaria de jogar com o modo de acessibilidade ligado? Aperte em qualquer parte da tela, espere o som de confirmação e responda sim ou não. Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer.',
       'possible_next_states': {
         'sim': () => {
           changeVoiceAccessibility(true)
@@ -348,6 +348,12 @@ const VoiceInterface = forwardRef((props, ref) => {
       }
     }))[0]
 
+    let helpMessage = results['value'].map(((result) => {
+      if (result.includes('ajuda')) {
+        return true
+      }
+    }))[0]
+
     let possible_answers = Object.keys(voice_state['possible_next_states'])
 
     let valid_answer_key = results['value'].map((result) => {
@@ -363,6 +369,8 @@ const VoiceInterface = forwardRef((props, ref) => {
     if (repeatMessage == true) {
       changeVoiceInterfaceState(null)
       changeVoiceInterfaceState(voiceInterfaceState)
+    } else if (helpMessage) {
+      Speech.speak("Seja bem-vindo ao jogo de perguntas e respostas acessiveis. Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer e as opções para avançar.")
     } else if (next_state != undefined) {
       next_state()
     } else { 
