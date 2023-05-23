@@ -270,7 +270,7 @@ const VoiceInterface = forwardRef((props, ref) => {
           changeVoiceInterfaceState('wait_for_next_question')
         },
         'não': () => {
-          changeVoiceInterfaceState('wait_for_user_answer')
+          changeVoiceInterfaceState('read_question')
         }
       }
     },
@@ -315,7 +315,8 @@ const VoiceInterface = forwardRef((props, ref) => {
         'Não consegui entender, poderia repetir?',
         'Por favor, repita o que você disse',
         'Desculpe, mas não entendi, poderia repetir por favor?',
-        'Hmm não consegui compreender, repita por favor'
+        'Opa, não consegui compreender, repita por favor',
+        'Macacos me mordam, me perdi no pagode'
       ]
 
       const randomIndex = Math.floor(Math.random() * messages.length);
