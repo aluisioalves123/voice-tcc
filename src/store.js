@@ -20,7 +20,9 @@ const useStore = create((set) => ({
   roomUserCount: null,
   changeRoomUserCount: (roomUserCount) => set(() => ({roomUserCount: roomUserCount})),
   scoreboard: null,
-  changeScoreboard:  (scoreboard) => set(() => ({scoreboard: scoreboard}))
+  changeScoreboard:  (scoreboard) => set(() => ({scoreboard: scoreboard})),
+  connectionMessage: null,
+  roomAdmin: false,
+  changeRoomAdmin: (roomAdmin) => set(() => ({roomAdmin: roomAdmin}))
 }))
-
 export default useStore

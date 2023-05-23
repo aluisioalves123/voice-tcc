@@ -60,8 +60,11 @@ const connectRoom = async () => {
     if (data.message != undefined) {
       let message = JSON.parse(data.message)
       switch(message['message_type']) {
-        case 'room_info':
-          useStore.setState({roomUserCount: message['user_count']})
+        case 'user_connected':
+          useStore.setState({connectionMessage: message['message'], roomUserCount: message['user_count']})
+          break
+        case 'user_disconnected':
+          useStore.setState({connectionMessage: message['message'], roomUserCount: message['user_count']})
           break
         case 'init_game':
           useStore.setState({voiceInterfaceState: 'game'})

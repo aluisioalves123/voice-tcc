@@ -3,11 +3,14 @@ import { SafeAreaView, Text, Button, View } from 'react-native';
 import useStore from '../store'
 import { connectRoom, createRoom } from '../api/rooms'
 
+
 const Home = ({ navigation }) => {
+  const changeRoomAdmin = useStore(state => state.changeRoomAdmin)
 
   const handleRoomCreation = async () => {
     await createRoom()
     await connectRoom()
+    changeRoomAdmin(true)
     navigation.navigate('Lobby')
   };
 

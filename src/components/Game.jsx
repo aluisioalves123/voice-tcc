@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import useStore from '../store'
 
 import { registerAnswer } from '../api/game'
+import { disconnectRoom } from '../api/rooms'
 
 const Game = ({ navigation }) => {
 
@@ -14,7 +15,9 @@ const Game = ({ navigation }) => {
   const [optionSelected, setOptionSelected] = useState(false);
 
   const handleSelectAlternative = (alternative) => {
-    setSelectedAlternative(alternative);
+    if (optionSelected == false) {
+      setSelectedAlternative(alternative);
+    }
   };
 
   const handleSubmitAnswer = () => {

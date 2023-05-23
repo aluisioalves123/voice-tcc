@@ -41,7 +41,7 @@ const VoiceInterface = forwardRef((props, ref) => {
   const read_current_question = () => {
     let currentQuestion = stateRef.currentQuestion
     if (currentQuestion != null) {
-      let message = `A pergunta é ${currentQuestion.question}. `
+      let message = `Próxima pergunta. A pergunta é ${currentQuestion.question}. `
       message += "As alternativas são: "
 
       currentQuestion.alternatives.forEach((alternative) => {
@@ -90,7 +90,7 @@ const VoiceInterface = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (roomUserCount != null && voiceInterfaceState == 'player_lobby' || voiceInterfaceState == 'admin_lobby') {
-      Speech.speak(`${roomUserCount} jogadores estão conectados a sala agora`)
+      startSpeak(useStore.getState().connectionMessage)
     }
   }, [roomUserCount])
 
@@ -99,7 +99,7 @@ const VoiceInterface = forwardRef((props, ref) => {
       changeVoiceInterfaceState('end_game')
     }
   }, [scoreboard])
-  
+
   const possible_states = {
     'configuration_voice_accessibility': {
       'message': 'Seja bem-vindo ao jogo de perguntas e respostas acessiveis, você gostaria de jogar com o modo de acessibilidade ligado? Aperte em qualquer parte da tela, espere o som de confirmação e responda sim ou não. Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer.',
@@ -156,7 +156,7 @@ const VoiceInterface = forwardRef((props, ref) => {
         'sim': async () => {
           await createRoom()
 
-          Speech.speak(`Sala criada com sucesso, o nome da sala é ${useStore.getState().roomCode}`)
+          startSpeak(`Sala criada com sucesso, o nome da sala é ${useStore.getState().roomCode}`)
 
           await connectRoom()
 
@@ -180,7 +180,7 @@ const VoiceInterface = forwardRef((props, ref) => {
       'message': `Diga sim para confirmar a entrada na sala de nome ${useStore.getState().roomCode}. Diga não para repetir o nome da sala.`,
       'possible_next_states': {
         'sim': async () => {
-          Speech.speak('Procurando sala')
+          startSpeak('Procurando sala')
           
           await getRoom(useStore.getState().roomCode)
 
@@ -222,7 +222,7 @@ const VoiceInterface = forwardRef((props, ref) => {
           initGame(roomId)
         },
         'informação': () => {
-          Speech.speak(`O nome da sala é ${useStore.getState().roomCode}, no momento há ${useStore.getState().roomUserCount} jogadores na sala. A sala está aberta para jogadores entrarem`)
+          startSpeak(`O nome da sala é ${useStore.getState().roomCode}, no momento há ${useStore.getState().roomUserCount - 1} jogadores e você na sala. A sala está aberta para jogadores entrarem`)
         },
         'sair': () => {
           changeVoiceInterfaceState('home')
@@ -309,20 +309,23 @@ const VoiceInterface = forwardRef((props, ref) => {
     await Speech.stop()
   }
 
+  const startSpeak = (message) => {
+    Speech.speak(message)
+  }
+
   const onSpeechError = () => {
     if (useStore.getState().voiceAccessibility) {
       let messages = [
         'Não consegui entender, poderia repetir?',
         'Por favor, repita o que você disse',
         'Desculpe, mas não entendi, poderia repetir por favor?',
-        'Opa, não consegui compreender, repita por favor',
-        'Macacos me mordam, me perdi no pagode'
+        'Opa, não consegui compreender, repita por favor'
       ]
 
       const randomIndex = Math.floor(Math.random() * messages.length);
       const randomMessage = messages[randomIndex]
       console.log(`> ${randomMessage}`)
-      Speech.speak(randomMessage)
+      startSpeak(randomMessage)
     }
   }
 
@@ -371,11 +374,11 @@ const VoiceInterface = forwardRef((props, ref) => {
       changeVoiceInterfaceState(null)
       changeVoiceInterfaceState(voiceInterfaceState)
     } else if (helpMessage) {
-      Speech.speak("Seja bem-vindo ao jogo de perguntas e respostas acessiveis. Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer e as opções para avançar.")
+      startSpeak("Seja bem-vindo ao jogo de perguntas e respostas acessiveis. Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer e as opções para avançar.")
     } else if (next_state != undefined) {
       next_state()
     } else { 
-      Speech.speak("Entendi o que você disse, mas não condiz com as opções. Se quiser, posso repetir as opções, para isso diga repita")
+      startSpeak("Entendi o que você disse, mas não condiz com as opções. Se quiser, posso repetir as opções, para isso diga repita")
     }
   }
 
@@ -384,12 +387,9 @@ const VoiceInterface = forwardRef((props, ref) => {
       if (voiceInterfaceState != null && voiceAccessibility != false) {
         let voice_state = possible_states[voiceInterfaceState]
 
-        Speech.speak(voice_state['message'])
+        startSpeak(voice_state['message'])
         console.log(`> ${voice_state['message']}`)
-        
-        // if (voice_state.final_state != true){ 
-        //   startListening()
-        // }
+      
       }
     }, [voiceInterfaceState])
   )
