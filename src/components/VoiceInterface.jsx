@@ -170,6 +170,9 @@ const VoiceInterface = forwardRef((props, ref) => {
     'enter_room': {
       'message': 'Entrando em uma sala, qual seria o nome da sala que deseja entrar?',
       'possible_next_states': {
+        'sair': () => {
+          changeVoiceInterfaceState('home')
+        },
         'any': () => {
           changeRoomCode(stateRef.voiceResults[0])
           changeVoiceInterfaceState('confirm_room_code')
@@ -346,25 +349,34 @@ const VoiceInterface = forwardRef((props, ref) => {
     let voiceInterfaceState = useStore.getState().voiceInterfaceState
     let voice_state = possible_states[voiceInterfaceState]
     
-    let repeatMessage = results['value'].map(((result) => {
+    let repeatMessage = results['value'].find(((result) => {
       if (result.includes('repita') || result.includes('repetir')) {
         return true
       }
-    }))[0]
+    }))
 
-    let helpMessage = results['value'].map(((result) => {
+    let helpMessage = results['value'].find(((result) => {
       if (result.includes('ajuda')) {
         return true
       }
-    }))[0]
+    }))
 
     let possible_answers = Object.keys(voice_state['possible_next_states'])
 
-    let valid_answer_key = results['value'].map((result) => {
-      if (possible_answers.includes(result)) {
-        return result
+    let valid_answer_key = results['value'].reduce((accumulator, result) => {
+
+      let matched_answer = possible_answers.find((possible_answer) => {
+        if (result.toLowerCase().includes(possible_answer)) {
+          return possible_answer
+        }
+      })
+
+      if (accumulator === undefined && matched_answer != undefined) {
+        return matched_answer
       }
-    })[0]
+
+      return accumulator
+    }, undefined)
 
     let valid_answer = voice_state['possible_next_states'][valid_answer_key]
     let fallback_option = voice_state['possible_next_states']['any']
@@ -374,7 +386,7 @@ const VoiceInterface = forwardRef((props, ref) => {
       changeVoiceInterfaceState(null)
       changeVoiceInterfaceState(voiceInterfaceState)
     } else if (helpMessage) {
-      startSpeak("Seja bem-vindo ao jogo de perguntas e respostas acessiveis. Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer e as opções para avançar.")
+      startSpeak("Em qualquer momento você pode dizer repita e eu vou repetir o que acabei de dizer e as opções para avançar.")
     } else if (next_state != undefined) {
       next_state()
     } else { 
